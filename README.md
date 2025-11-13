@@ -95,19 +95,5 @@ npm run test:ws         # WebSocket scenario
 npm run compare         # Compare outputs from last runs
 ```
 
-The scripts generate JSON/CSV reports under `load-tests/results`. Use `compare.js` to produce summary comparisons between HTTP/1.1 and HTTP/2 pipelines.
 
-## Architecture Overview
-
-- See `ARCHITECTURE.md` for detailed diagrams, OSI layer mapping, sequence diagrams, and trade-off analysis.
-- `docs/diagrams` holds exported diagrams (add your own `.png` files).
-- `docs/performance-results.md` is a living document for benchmark findings.
-
-## Contributing
-
-This repository is a teaching aid. Contributions that improve clarity, add comments, or expand the educational value are welcome. Please open an issue or pull request with a summary of your changes.
-
----
-
-> **TODO:** Implement the remaining business logic in each subsystem (see inline TODO markers). Update documentation as real benchmark data becomes available.
 
