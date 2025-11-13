@@ -1,0 +1,28 @@
+{
+  "name": "real-time-analytics-dashboard",
+  "version": "0.1.0",
+  "description": "Educational backend project showcasing real-time analytics patterns with HTTP, WebSocket, Redis, and load testing.",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node system1-http-redis/src/server.js",
+    "dev": "nodemon system1-http-redis/src/server.js",
+    "test": "node load-tests/http-test.js",
+    "docker:up": "docker compose up",
+    "docker:down": "docker compose down",
+    "workspace:install": "npm run install --workspaces"
+  },
+  "workspaces": [
+    "system1-http-redis",
+    "system2-websocket",
+    "fake-servers",
+    "load-tests"
+  ],
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
+

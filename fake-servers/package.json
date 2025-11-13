@@ -1,0 +1,21 @@
+{
+  "name": "fake-servers",
+  "version": "0.1.0",
+  "description": "Simulated metric producers for the real-time analytics dashboard.",
+  "main": "metric-sender-http.js",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start:http": "node metric-sender-http.js",
+    "start:ws": "node metric-sender-ws.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "pino": "^8.16.0",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "pino-pretty": "^10.2.0"
+  }
+}
+

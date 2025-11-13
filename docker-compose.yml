@@ -1,0 +1,134 @@
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: rta-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "${SYSTEM1_REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    environment:
+      - TZ=UTC
+
+  system1-load-balancer:
+    build:
+      context: ./system1-http-redis
+      dockerfile: Dockerfile
+    container_name: rta-system1-lb
+    depends_on:
+      - redis
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SYSTEM1_HTTP_PORT=4000
+      - SYSTEM1_HTTP2_PORT=4001
+      - SYSTEM1_WS_PORT=4002
+      - SYSTEM1_WORKER_COUNT=${SYSTEM1_WORKER_COUNT:-4}
+      - SYSTEM1_REDIS_HOST=redis
+      - SYSTEM1_REDIS_PORT=6379
+      - SYSTEM1_REDIS_DB=0
+      - SYSTEM1_REDIS_USERNAME=
+      - SYSTEM1_REDIS_PASSWORD=
+    ports:
+      - "4000:4000"
+      - "4001:4001"
+      - "4002:4002"
+    command: ["node", "src/load-balancer.js"]
+
+  system1-worker:
+    build:
+      context: ./system1-http-redis
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SYSTEM1_REDIS_HOST=redis
+      - SYSTEM1_REDIS_PORT=6379
+      - SYSTEM1_REDIS_DB=0
+      - SYSTEM1_REDIS_USERNAME=
+      - SYSTEM1_REDIS_PASSWORD=
+    command: ["node", "src/worker.js"]
+    deploy:
+      replicas: 2
+
+  system1-websocket:
+    build:
+      context: ./system1-http-redis
+      dockerfile: Dockerfile
+    container_name: rta-system1-ws
+    depends_on:
+      - redis
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SYSTEM1_WS_PORT=4002
+      - SYSTEM1_REDIS_HOST=redis
+      - SYSTEM1_REDIS_PORT=6379
+      - SYSTEM1_REDIS_DB=0
+      - SYSTEM1_REDIS_USERNAME=
+      - SYSTEM1_REDIS_PASSWORD=
+    command: ["node", "src/websocket-server.js"]
+
+  system2-websocket:
+    build:
+      context: ./system2-websocket
+      dockerfile: Dockerfile
+    container_name: rta-system2
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SYSTEM2_WS_PORT=4100
+      - SYSTEM2_AGG_WINDOW_MS=${SYSTEM2_AGG_WINDOW_MS:-1000}
+      - SYSTEM2_BUFFER_SIZE=${SYSTEM2_BUFFER_SIZE:-500}
+    ports:
+      - "4100:4100"
+    command: ["node", "src/server.js"]
+
+  fake-servers-http:
+    build:
+      context: ./fake-servers
+      dockerfile: Dockerfile
+    container_name: rta-fake-http
+    depends_on:
+      - system1-load-balancer
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - FAKE_SERVER_COUNT=${FAKE_SERVER_COUNT:-10}
+      - FAKE_SERVER_INTERVAL_MS=${FAKE_SERVER_INTERVAL_MS:-1000}
+      - FAKE_HTTP_TARGET=http://system1-load-balancer:4000/metrics
+    command: ["node", "metric-sender-http.js"]
+
+  fake-servers-ws:
+    build:
+      context: ./fake-servers
+      dockerfile: Dockerfile
+    container_name: rta-fake-ws
+    depends_on:
+      - system2-websocket
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - FAKE_SERVER_COUNT=${FAKE_SERVER_COUNT:-10}
+      - FAKE_SERVER_INTERVAL_MS=${FAKE_SERVER_INTERVAL_MS:-1000}
+      - FAKE_WS_TARGET=ws://system2-websocket:4100
+    command: ["node", "metric-sender-ws.js"]
+
+  nginx:
+    image: nginx:alpine
+    container_name: rta-nginx
+    depends_on:
+      - system1-load-balancer
+      - system2-websocket
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+

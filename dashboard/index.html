@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-Time Analytics Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Real-Time Analytics Dashboard</h1>
+      <section class="connection-status">
+        <span id="connection-indicator" class="status-dot offline"></span>
+        <span id="connection-text">Disconnected</span>
+      </section>
+    </header>
+
+    <main>
+      <section class="controls">
+        <label for="server-select">Server:</label>
+        <select id="server-select">
+          <option value="all">All Servers</option>
+        </select>
+
+        <label for="system-select">System:</label>
+        <select id="system-select">
+          <option value="system1">System 1 (HTTP + Redis)</option>
+          <option value="system2">System 2 (WebSocket)</option>
+        </select>
+
+        <button id="connect-btn">Connect</button>
+      </section>
+
+      <section class="stats">
+        <div class="stat-card">
+          <h3>Throughput</h3>
+          <p id="throughput-value">0 msg/s</p>
+        </div>
+        <div class="stat-card">
+          <h3>Latency (p95)</h3>
+          <p id="latency-value">-- ms</p>
+        </div>
+      </section>
+
+      <section class="charts">
+        <canvas id="cpu-chart"></canvas>
+        <canvas id="memory-chart"></canvas>
+        <canvas id="disk-chart"></canvas>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        This dashboard receives live updates from System 1 (Redis-backed) or System 2 (in-memory)
+        ingestion pipelines.
+      </p>
+    </footer>
+
+    <script src="dashboard.js" type="module"></script>
+  </body>
+</html>
+

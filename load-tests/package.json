@@ -1,0 +1,21 @@
+{
+  "name": "load-tests",
+  "version": "0.1.0",
+  "description": "Load testing utilities for the real-time analytics dashboard systems.",
+  "main": "http-test.js",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test:http": "node http-test.js",
+    "test:ws": "node websocket-test.js",
+    "compare": "node compare.js"
+  },
+  "dependencies": {
+    "artillery": "^2.0.0-28",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.3.1",
+    "fs-extra": "^11.1.1",
+    "ws": "^8.13.0"
+  }
+}
+
